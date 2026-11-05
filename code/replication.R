@@ -101,7 +101,8 @@ table1 <- data.table()
 for (top in c(5, 10, 20, 35)) {
 
 	# Restrict to departments ranked 1 to top for each group
-	econ_top <- econ_reg[rank >= 1 & rank <= top]
+	# Non-emeritus faculty only
+	econ_top <- econ_reg[rank >= 1 & rank <= top & emeritus == 0]
 
 	# Run and store regs
 	reg_nocontrols <- lm(tenure ~ alph_order, data = econ_top)
@@ -264,7 +265,8 @@ table4 <- data.table()
 for (top in c(5, 10, 20, 35)) {
 
 	# Restrict to departments ranked 1 to top for each group
-	psych_top <- psychdata[rank >= 1 & rank <= top]
+	# Non-emeritus faculty only
+	psych_top <- psychdata[rank >= 1 & rank <= top & emeritus == 0]
 
 	# Run and store regs
 	reg_nocontrols <- lm(tenure ~ alph_order, data = psych_top)
