@@ -1,21 +1,18 @@
-\begin{table}[htbp]
-\raggedright
-\textit{Table 1} \\
-\textbf{Linear Probability Regressions} \\
-\textit{(dependent variable: 1 if tenured in Economics)} \\[1ex]
-\begin{tabular}{l cc cc cc cc}
-\hline\hline
-\textit{Sample} & \multicolumn{2}{c}{\textit{Top 5 econ}} & \multicolumn{2}{c}{\textit{Top 10 econ}} & \multicolumn{2}{c}{\textit{Top 20 econ}} & \multicolumn{2}{c}{\textit{Top 35 econ}} \\
-\hline
-Last name initial & $-$0.0095** & $-$0.0073 & $-$0.0063** & $-$0.0056* & $-$0.0028 & $-$0.0020 & $-$0.0016 & $-$0.0012 \\
- & ($-$2.15) & ($-$1.63) & ($-$1.99) & ($-$1.80) & ($-$1.27) & ($-$0.92) & ($-$0.92) & ($-$0.68) \\
-American nationality & --- & 0.2048** & --- & 0.1854** & --- & 0.1646** & --- & 0.1269** \\
- &  & (3.36) &  & (4.33) &  & (5.32) &  & (5.10) \\
-Six origin controls & no & yes & no & yes & no & yes & no & yes \\
-R$^2$ & 0.0210 & 0.1110 & 0.0092 & 0.1056 & 0.0019 & 0.0852 & 0.0007 & 0.0679 \\
-Number of obs. & \multicolumn{2}{c}{218} & \multicolumn{2}{c}{426} & \multicolumn{2}{c}{853} & \multicolumn{2}{c}{1,305} \\
-Number of tenured (\%) & \multicolumn{2}{c}{157 (72.0\%)} & \multicolumn{2}{c}{314 (73.7\%)} & \multicolumn{2}{c}{639 (74.9\%)} & \multicolumn{2}{c}{983 (75.3\%)} \\
-\hline
-\end{tabular} \\[1ex]
-\parbox{\linewidth}{\footnotesize \textit{Notes:} **, *Statistically significant at the 5 percent and 10 percent level, respectively. t-stats below coefficients.}
-\end{table}
+\begin{tabular}{l *{8}{c}}
+\toprule
+& \multicolumn{8}{c}{\textit{DV: Tenure}} \\
+ & \multicolumn{2}{c}{Top 5 econ} & \multicolumn{2}{c}{Top 10 econ} & \multicolumn{2}{c}{Top 20 econ} & \multicolumn{2}{c}{Top 35 econ} \\
+\cmidrule(lr){2-3} \cmidrule(lr){4-5} \cmidrule(lr){6-7} \cmidrule(lr){8-9}
+ & (1) & (2) & (3) & (4) & (5) & (6) & (7) & (8) \\
+\midrule
+Last name initial & $-$0.0099** & $-$0.0086* & $-$0.0068** & $-$0.0063** & $-$0.0026 & $-$0.0016 & $-$0.0015 & $-$0.0011 \\
+ & (0.0046) & (0.0047) & (0.0033) & (0.0032) & (0.0023) & (0.0022) & (0.0018) & (0.0018) \\
+American nationality & --- & 0.2282*** & --- & 0.2062*** & --- & 0.1873*** & --- & 0.1436*** \\
+ &  & (0.0632) &  & (0.0445) &  & (0.0324) &  & (0.0260) \\
+\midrule[0.25pt]
+Six origin controls & No & Yes & No & Yes & No & Yes & No & Yes \\
+Number of tenured (\%) & \multicolumn{2}{c}{147 (70.7\%)} & \multicolumn{2}{c}{293 (72.3\%)} & \multicolumn{2}{c}{585 (73.2\%)} & \multicolumn{2}{c}{911 (73.9\%)} \\
+R$^2$ & 0.0225 & 0.1209 & 0.0106 & 0.1115 & 0.0016 & 0.0947 & 0.0006 & 0.0716 \\
+Number of obs. & \multicolumn{2}{c}{208} & \multicolumn{2}{c}{405} & \multicolumn{2}{c}{799} & \multicolumn{2}{c}{1,233} \\
+\bottomrule
+\end{tabular}
