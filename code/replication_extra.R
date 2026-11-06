@@ -7,6 +7,11 @@ library(data.table, warn.conflicts = FALSE)
 # Local Overleaf path, to copy output directly.
 overleaf <- "/Users/sgdodd/Library/CloudStorage/Dropbox-Penn/Stephanie Dodd/Apps/Overleaf/Stat 5200/replication exhibits"
 
+# Different path on my personal computer
+if (Sys.info()[["user"]] == "stephaniedodd") {
+	overleaf <- "/Users/stephaniedodd/Penn Dropbox/Stephanie Dodd/Apps/Overleaf/Stat 5200/replication exhibits"
+}
+
 #####################################################
 # Pull in publications data
 #####################################################
