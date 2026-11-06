@@ -8,9 +8,8 @@ library(ggplot2)
 # Overleaf LMRoman font
 latex_font <- "LM Roman 10"
 
-# Overleaf path for syncing (need to add paths to Overleaf after creating writeup doc)
-# overleaffig <- "/Users/sgdodd/Penn Dropbox/Stephanie Dodd/Apps/Overleaf/.../figures"
-# overleaftbl <- "/Users/sgdodd/Penn Dropbox/Stephanie Dodd/Apps/Overleaf/.../tables"
+# Locan Overleaf path, to copy output directly. 
+overleaf <- "/Users/sgdodd/Library/CloudStorage/Dropbox-Penn/Stephanie Dodd/Apps/Overleaf/Stat 5200/replication exhibits"
 
 #####################################################
 # Pull in faculty data
@@ -46,11 +45,9 @@ econdata[tenure == 1, untenured := 0]
 for (top in c(5, 10, 20, 35)) {
 
 	if (top == 35) {
-		ptitle <- "All Departments"
-		fname  <- "alldept"
+		fname <- "alldept"
 	} else {
-		ptitle <- paste0("Top ", top, " Departments")
-		fname  <- paste0("top", top)
+		fname <- paste0("top", top)
 	}
 
 	# Restrict to departments ranked 1 to top
@@ -72,13 +69,14 @@ for (top in c(5, 10, 20, 35)) {
 		scale_linetype_manual(values = c("Tenured" = "solid", "Untenured" = "dashed")) +
 		scale_x_continuous(breaks = 1:26, labels = LETTERS) +
 		scale_y_continuous(limits = c(0, 1), breaks = seq(0, 1, 0.2)) +
-		labs(title = ptitle, x = "First Letter of Surname", y = "Cumulative Share",
+		labs(x = "First Letter of Surname", y = "Cumulative Share",
 			color = NULL, linetype = NULL) +
 		theme_classic(base_size = 14, base_family = latex_font) +
-		theme(legend.position = c(0.2, 0.85),
-			plot.title = element_text(face = "bold", hjust = 0.5))
+		theme(legend.position = c(0.2, 0.85))
 
 	ggsave(paste0("../output/tenureCDF_econ_", fname, ".pdf"), tenureCDF_econ,
+		width = 5, height = 4, device = quartz, type = "pdf")
+	ggsave(file.path(overleaf, paste0("tenureCDF_econ_", fname, ".pdf")), tenureCDF_econ,
 		width = 5, height = 4, device = quartz, type = "pdf")
 }
 
@@ -120,10 +118,10 @@ for (top in c(5, 10, 20, 35)) {
 			top        = top,
 			controls   = controls,
 			coef       = coefs["alph_order", "Estimate"],
-			tstat      = coefs["alph_order", "t value"],
+			se         = coefs["alph_order", "Std. Error"],
 			pval       = coefs["alph_order", "Pr(>|t|)"],
 			amer_coef  = ifelse(controls == 1, coefs["american", "Estimate"], NA),
-			amer_tstat = ifelse(controls == 1, coefs["american", "t value"], NA),
+			amer_se    = ifelse(controls == 1, coefs["american", "Std. Error"], NA),
 			amer_pval  = ifelse(controls == 1, coefs["american", "Pr(>|t|)"], NA),
 			rsq        = summary(reg)$r.squared,
 			n          = nobs(reg),
@@ -131,33 +129,32 @@ for (top in c(5, 10, 20, 35)) {
 	}
 }
 
-table1
-fwrite(table1, "../output/table1_tenure_econ.csv")
-
 
 ## Format Table 1 like the paper
 
-# Significance stars: ** 5 percent, * 10 percent (paper has no 1 percent stars)
+# Significance stars: *** 1 percent, ** 5 percent, * 10 percent
 table1[, stars := ""]
 table1[pval < 0.10, stars := "*"]
 table1[pval < 0.05, stars := "**"]
+table1[pval < 0.01, stars := "***"]
 
 table1[, amer_stars := ""]
 table1[amer_pval < 0.10, amer_stars := "*"]
 table1[amer_pval < 0.05, amer_stars := "**"]
+table1[amer_pval < 0.01, amer_stars := "***"]
 
-# Cell text: 4 decimals for coefficients, t-stats in parentheses, LaTeX minus signs
+# Cell text: 4 decimals for coefficients and SEs, SEs in parentheses, LaTeX minus signs
 table1[, coef_txt := gsub("-", "$-$", paste0(sprintf("%.4f", coef), stars))]
-table1[, tstat_txt := gsub("-", "$-$", sprintf("(%.2f)", tstat))]
+table1[, se_txt := sprintf("(%.4f)", se)]
 
 # American: emdash in the no-controls columns
 table1[, amer_txt := "---"]
 table1[controls == 1, amer_txt := gsub("-", "$-$", paste0(sprintf("%.4f", amer_coef), amer_stars))]
-table1[, amer_tstat_txt := ""]
-table1[controls == 1, amer_tstat_txt := gsub("-", "$-$", sprintf("(%.2f)", amer_tstat))]
+table1[, amer_se_txt := ""]
+table1[controls == 1, amer_se_txt := sprintf("(%.4f)", amer_se)]
 
-table1[, origin_txt := "no"]
-table1[controls == 1, origin_txt := "yes"]
+table1[, origin_txt := "No"]
+table1[controls == 1, origin_txt := "Yes"]
 
 # N and number tenured span both columns of a sample, so take them from the no-controls rows
 table1_n <- table1[controls == 0]
@@ -167,30 +164,28 @@ table1_n[, tenured_txt := paste0("\\multicolumn{2}{c}{", n_tenured,
 
 # Aaaaaaand output tex file with formatted table
 table1_tex <- c(
-	"\\begin{table}[htbp]",
-	"\\raggedright",
-	"\\textit{Table 1} \\\\",
-	"\\textbf{Linear Probability Regressions} \\\\",
-	"\\textit{(dependent variable: 1 if tenured in Economics)} \\\\[1ex]",
-	"\\begin{tabular}{l cc cc cc cc}",
-	"\\hline\\hline",
-	"\\textit{Sample} & \\multicolumn{2}{c}{\\textit{Top 5 econ}} & \\multicolumn{2}{c}{\\textit{Top 10 econ}} & \\multicolumn{2}{c}{\\textit{Top 20 econ}} & \\multicolumn{2}{c}{\\textit{Top 35 econ}} \\\\",
-	"\\hline",
+	"\\begin{tabular}{l *{8}{c}}",
+	"\\toprule",
+	"& \\multicolumn{8}{c}{\\textit{DV: Tenure}} \\\\",
+	" & \\multicolumn{2}{c}{Top 5 econ} & \\multicolumn{2}{c}{Top 10 econ} & \\multicolumn{2}{c}{Top 20 econ} & \\multicolumn{2}{c}{Top 35 econ} \\\\",
+	"\\cmidrule(lr){2-3} \\cmidrule(lr){4-5} \\cmidrule(lr){6-7} \\cmidrule(lr){8-9}",
+	" & (1) & (2) & (3) & (4) & (5) & (6) & (7) & (8) \\\\",
+	"\\midrule",
 	paste0("Last name initial & ", paste(table1$coef_txt, collapse = " & "), " \\\\"),
-	paste0(" & ", paste(table1$tstat_txt, collapse = " & "), " \\\\"),
+	paste0(" & ", paste(table1$se_txt, collapse = " & "), " \\\\"),
 	paste0("American nationality & ", paste(table1$amer_txt, collapse = " & "), " \\\\"),
-	paste0(" & ", paste(table1$amer_tstat_txt, collapse = " & "), " \\\\"),
+	paste0(" & ", paste(table1$amer_se_txt, collapse = " & "), " \\\\"),
+	"\\midrule[0.25pt]",
 	paste0("Six origin controls & ", paste(table1$origin_txt, collapse = " & "), " \\\\"),
+	paste0("Number of tenured (\\%) & ", paste(table1_n$tenured_txt, collapse = " & "), " \\\\"),
 	paste0("R$^2$ & ", paste(sprintf("%.4f", table1$rsq), collapse = " & "), " \\\\"),
 	paste0("Number of obs. & ", paste(table1_n$n_txt, collapse = " & "), " \\\\"),
-	paste0("Number of tenured (\\%) & ", paste(table1_n$tenured_txt, collapse = " & "), " \\\\"),
-	"\\hline",
-	"\\end{tabular} \\\\[1ex]",
-	"\\parbox{\\linewidth}{\\footnotesize \\textit{Notes:} **, *Statistically significant at the 5 percent and 10 percent level, respectively. t-stats below coefficients.}",
-	"\\end{table}")
+	"\\bottomrule",
+	"\\end{tabular}"
+	)
 
 writeLines(table1_tex, "../output/table1_tenure_econ.tex")
-# writeLines(table1_tex, file.path(overleaftbl, "table1_tenure_econ.tex"))
+writeLines(table1_tex, file.path(overleaf, "table1_tenure_econ.tex"))
 
 
 #####################################################
@@ -212,11 +207,9 @@ psychdata[tenure == 1, untenured := 0]
 for (top in c(5, 10, 20, 35)) {
 
 	if (top == 35) {
-		ptitle <- "All Departments"
-		fname  <- "alldept"
+		fname <- "alldept"
 	} else {
-		ptitle <- paste0("Top ", top, " Departments")
-		fname  <- paste0("top", top)
+		fname <- paste0("top", top)
 	}
 
 	# Restrict to departments ranked 1 to top
@@ -238,13 +231,14 @@ for (top in c(5, 10, 20, 35)) {
 		scale_linetype_manual(values = c("Tenured" = "solid", "Untenured" = "dashed")) +
 		scale_x_continuous(breaks = 1:26, labels = LETTERS) +
 		scale_y_continuous(limits = c(0, 1), breaks = seq(0, 1, 0.2)) +
-		labs(title = ptitle, x = "First Letter of Surname", y = "Cumulative Share",
+		labs(x = "First Letter of Surname", y = "Cumulative Share",
 			color = NULL, linetype = NULL) +
 		theme_classic(base_size = 14, base_family = latex_font) +
-		theme(legend.position = c(0.2, 0.85),
-			plot.title = element_text(face = "bold", hjust = 0.5))
+		theme(legend.position = c(0.2, 0.85))
 
 	ggsave(paste0("../output/tenureCDF_psych_", fname, ".pdf"), tenureCDF_psych,
+		width = 5, height = 4, device = quartz, type = "pdf")
+	ggsave(file.path(overleaf, paste0("tenureCDF_psych_", fname, ".pdf")), tenureCDF_psych,
 		width = 5, height = 4, device = quartz, type = "pdf")
 }
 
@@ -281,40 +275,59 @@ for (top in c(5, 10, 20, 35)) {
 
 		coefs <- summary(reg)$coefficients
 		table4 <- rbind(table4, data.table(
-			top      = top,
-			controls = controls,
-			coef     = coefs["alph_order", "Estimate"],
-			se       = coefs["alph_order", "Std. Error"],
-			pval     = coefs["alph_order", "Pr(>|t|)"],
-			n        = nobs(reg),
-			rsq      = summary(reg)$r.squared))
+			top       = top,
+			controls  = controls,
+			coef      = coefs["alph_order", "Estimate"],
+			se        = coefs["alph_order", "Std. Error"],
+			pval      = coefs["alph_order", "Pr(>|t|)"],
+			rsq       = summary(reg)$r.squared,
+			n         = nobs(reg),
+			n_tenured = sum(psych_top$tenure)))
 	}
 }
 
-# Significance stars
+
+## Format Table 4 like the paper
+
+# Significance stars: *** 1 percent, ** 5 percent, * 10 percent
 table4[, stars := ""]
 table4[pval < 0.10, stars := "*"]
 table4[pval < 0.05, stars := "**"]
 table4[pval < 0.01, stars := "***"]
 
-table4
-fwrite(table4, "../output/table4_tenure_psych.csv")
+# Cell text: 4 decimals for coefficients and SEs, SEs in parentheses, LaTeX minus signs
+table4[, coef_txt := gsub("-", "$-$", paste0(sprintf("%.4f", coef), stars))]
+table4[, se_txt := sprintf("(%.4f)", se)]
+
+table4[, origin_txt := "No"]
+table4[controls == 1, origin_txt := "Yes"]
+
+# N and number tenured span both columns of a sample, so take them from the no-controls rows
+table4_n <- table4[controls == 0]
+table4_n[, n_txt := paste0("\\multicolumn{2}{c}{", format(n, big.mark = ",", trim = TRUE), "}")]
+table4_n[, tenured_txt := paste0("\\multicolumn{2}{c}{", format(n_tenured, big.mark = ",", trim = TRUE),
+	" (", sprintf("%.1f", 100 * n_tenured / n), "\\%)}")]
 
 # Aaaaaaand output tex file with formatted table
 table4_tex <- c(
-	"\\begin{tabular}{l cccccccc}",
-	"\\hline",
-	" & \\multicolumn{2}{c}{Top 5} & \\multicolumn{2}{c}{Top 10} & \\multicolumn{2}{c}{Top 20} & \\multicolumn{2}{c}{Top 35} \\\\",
+	"\\begin{tabular}{l *{8}{c}}",
+	"\\toprule",
+	"& \\multicolumn{8}{c}{\\textit{DV: Tenure}} \\\\",
+	" & \\multicolumn{2}{c}{Top 5 psych} & \\multicolumn{2}{c}{Top 10 psych} & \\multicolumn{2}{c}{Top 20 psych} & \\multicolumn{2}{c}{Top 35 psych} \\\\",
+	"\\cmidrule(lr){2-3} \\cmidrule(lr){4-5} \\cmidrule(lr){6-7} \\cmidrule(lr){8-9}",
 	" & (1) & (2) & (3) & (4) & (5) & (6) & (7) & (8) \\\\",
-	"\\hline",
-	paste0("Surname initial & ", paste0(sprintf("%.4f", table4$coef), table4$stars, collapse = " & "), " \\\\"),
-	paste0(" & ", paste0(sprintf("(%.4f)", table4$se), collapse = " & "), " \\\\"),
-	paste0("Controls & ", paste0(ifelse(table4$controls == 1, "Yes", "No"), collapse = " & "), " \\\\"),
-	paste0("Observations & ", paste0(table4$n, collapse = " & "), " \\\\"),
-	paste0("R$^2$ & ", paste0(sprintf("%.3f", table4$rsq), collapse = " & "), " \\\\"),
-	"\\hline",
-	"\\end{tabular}")
+	"\\midrule",
+	paste0("Last name initial & ", paste(table4$coef_txt, collapse = " & "), " \\\\"),
+	paste0(" & ", paste(table4$se_txt, collapse = " & "), " \\\\"),
+	"\\midrule[0.25pt]",
+	paste0("Six origin controls & ", paste(table4$origin_txt, collapse = " & "), " \\\\"),
+	paste0("Number of tenured (\\%) & ", paste(table4_n$tenured_txt, collapse = " & "), " \\\\"),
+	paste0("R$^2$ & ", paste(sprintf("%.4f", table4$rsq), collapse = " & "), " \\\\"),
+	paste0("Number of obs. & ", paste(table4_n$n_txt, collapse = " & "), " \\\\"),
+	"\\bottomrule",
+	"\\end{tabular}"
+	)
 
 writeLines(table4_tex, "../output/table4_tenure_psych.tex")
-# writeLines(table4_tex, file.path(overleaftbl, "table4_tenure_psych.tex"))
+writeLines(table4_tex, file.path(overleaf, "table4_tenure_psych.tex"))
 
