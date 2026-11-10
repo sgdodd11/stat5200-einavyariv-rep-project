@@ -2,9 +2,13 @@
 # It also adds some re-encoding for problematic characters
 # and cleans text to plain ASCII (for Scopus queries)
 
+## ALL FILE PATHS IN SCRIPT ARE RELATIVE TO THIS SCRIPT'S FOLDER LOCATION (code/)
+
 library(foreign)
 
 in_dir <- "../data/125621-V1"
+out_dir <- "../data/raw"
+dir.create(out_dir, showWarnings = FALSE, recursive = TRUE)
 files <- list.files(in_dir, pattern = "\\.dta$", full.names = TRUE)
 
 # Columns holding person names: keep only letters, spaces, hyphens, apostrophes, periods
@@ -39,7 +43,7 @@ for (f in files) {
       df[[col]] <- clean_text(df[[col]], name_col = col %in% name_cols)
     }
   }
-  out <- file.path("data/raw", sub("\\.dta$", ".csv", basename(f)))
+  out <- file.path(out_dir, sub("\\.dta$", ".csv", basename(f)))
   write.csv(df, out, row.names = FALSE, na = "")
   cat(sprintf("%s -> %s (%d rows, %d cols)\n", basename(f), basename(out), nrow(df), ncol(df)))
 }
